@@ -1,0 +1,105 @@
+/*****************************************************************************/
+/*                                                                           */
+/* Filename: main.c                                                          */
+/* Author:   Kertész Csaba-Zoltán                                            */
+/* E-mail:   csaba.kertesz@vega.unitbv.ro                                    */
+/*                                                                           */
+/*****************************************************************************/
+/*                                                                           */
+/* Description                                                               */
+/*   - source file containing main system routines                           */
+/*                                                                           */
+/*****************************************************************************/
+/*                                                                           */
+/* Change history:                                                           */
+/*                                                                           */
+/*   13.10.2017: - first implementation                                      */
+/*                                                                           */
+/*****************************************************************************/
+
+/**** include files **********************************************************/
+
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include "xplained.h"
+
+/**** local function prototypes **********************************************/
+void init_uc(void);
+
+/**** constants **************************************************************/
+
+/**** global variables *******************************************************/
+
+/**** local functions ********************************************************/
+
+ISR(PORTE_INT0_vect)
+{
+	LED_TOGGLE(LED0);
+}
+
+/*===========================================================================*/
+/*  Function: init_uc                                                        */
+/*  Module:   main                                                           */
+/*===========================================================================*/
+/*  Parameters:                                                              */
+/*        - none                                                             */
+/*  Return value:                                                            */
+/*        - none                                                             */
+/*===========================================================================*/
+/*  Description:                                                             */
+/*    initialize microcontroller                                             */
+/*===========================================================================*/
+void init_uc(void)
+{
+	XplainedInit();
+
+	// initialize button connected to PA0
+	PORTE.DIRCLR = 1;
+	PORTE.PIN0CTRL = PORT_OPC_PULLUP_gc | PORT_ISC_FALLING_gc;
+	PORTE.INTCTRL = PORT_INT1LVL_OFF_gc | PORT_INT0LVL_LO_gc;
+	PORTE.INT0MASK = 1;
+	LEDPORT.DIR=LED0;
+	LED_OFF(LED0);
+
+	// configure interrupts
+	PMIC.CTRL |= PMIC_LOLVLEX_bm;
+}
+
+/**** global functions *******************************************************/
+
+/*===========================================================================*/
+/*  Function: main                                                           */
+/*  Module:   main                                                           */
+/*===========================================================================*/
+/*  Parameters:                                                              */
+/*        - none                                                             */
+/*  Return value:                                                            */
+/*        - none                                                             */
+/*===========================================================================*/
+/*  Description:                                                             */
+/*    main program loop                                                      */
+/*===========================================================================*/
+int main(void)
+{
+	//initialize uC
+	init_uc();
+
+	//enable interrupts
+	sei();
+
+	while(1)
+	{
+		if(!PORTE.DIRCLR)
+		{
+			
+		_delay_ms(100);
+		LEDPORT.DIR;
+		}
+		else
+		LEDPORT.DIR;
+	}
+
+	return 0;
+}
